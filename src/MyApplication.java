@@ -9,8 +9,8 @@ public class MyApplication extends Application{
     @Override
     public Set<Class<?>> getClasses() {
         HashSet h = new HashSet<Class<?>>();
-        h.add(HelloWorld.class);
-        h.add(User_Controller.class);
+        //h.add(HelloWorld.class);
+        h.add(User_Service.class);
         return h;
     }
 }

@@ -22,5 +22,6 @@
     <orderEntry type="library" scope="PROVIDED" name="GlassFish 5.0.0" level="application_server_libraries" />
     <orderEntry type="library" scope="PROVIDED" name="GlassFish 5.0.0 - RESTful Web Service" level="application_server_libraries" />
     <orderEntry type="library" name="mysql:mysql-connector-java:8.0.16" level="project" />
+    <orderEntry type="library" name="javax.json:javax.json-api:1.1.4" level="project" />
   </component>
 </module>
