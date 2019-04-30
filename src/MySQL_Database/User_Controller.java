@@ -51,6 +51,42 @@ public class User_Controller {
         return response;
     }
 
+    public Response create_user(JsonObject user_values) {
+        Response response = Response.status(Response.Status.NOT_FOUND).build();
+
+        try {
+            String SQL = "SELECT create_user(?, ?, ?, ?, ?) AS 'RESULT';";
+            PreparedStatement stmt = MySQL_Connection.getInstance().getConnection().prepareStatement(SQL);
+            stmt.setString(1, user_values.getString("email"));
+            stmt.setString(2, user_values.getString("pwd"));
+            stmt.setString(3, user_values.getString("fName"));
+            stmt.setString(4, user_values.getString("lName"));
+            stmt.setString(5, user_values.getString("telNumber"));
+
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()){
+                switch (rs.getInt("RESULT")){
+                    case 0:
+                        response = Response.status(Response.Status.BAD_REQUEST)
+                                .entity(Json.createObjectBuilder().add("response", "Error while creating a account."))
+                                .build();
+                        break;
+                    case 1:
+                        response = Response.status(Response.Status.CREATED)
+                                .entity(getUser(user_values.getString("email")))
+                                .build();
+                }
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error in User_Controller::create_user \n");
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+        }
+        return response;
+    }
+
     private JsonObject getUser(String email){
         JsonObject JO = Json.createObjectBuilder().build();
 
