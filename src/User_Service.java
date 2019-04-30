@@ -11,6 +11,12 @@ import java.io.StringReader;
 @Path("/user")
 public class User_Service {
 
+    private User_Controller UC;
+
+    public User_Service(){
+        UC = new User_Controller();
+    }
+
     @POST
     @Path("/login")
     @Produces(MediaType.APPLICATION_JSON)
@@ -19,9 +25,17 @@ public class User_Service {
         JsonReader JR = Json.createReader(new StringReader(body));
         JsonObject credentials = JR.readObject();
 
-        User_Controller user_controller = new User_Controller();
+        return UC.login_user(credentials);
+    }
 
+    @POST
+    @Path("/create")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response create(String body){
+        JsonReader JR = Json.createReader(new StringReader(body));
+        JsonObject user_values = JR.readObject();
 
-        return user_controller.login_user(credentials);
+        return UC.create_user(user_values);
     }
 }
