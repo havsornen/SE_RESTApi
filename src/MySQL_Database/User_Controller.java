@@ -11,12 +11,12 @@ public class User_Controller {
     public User_Controller() {}
 
     public Response login_user(JsonObject credentials){
-        Response response = Response.status(Response.Status.BAD_REQUEST).build();
+        Response response = Response.status(Response.Status.UNAUTHORIZED).build();
         String email = credentials.getString("email");
         String password = credentials.getString("password");
 
         if (email.equals("") || password.equals("")) {
-            response = Response.status(Response.Status.BAD_REQUEST)
+            response = Response.status(Response.Status.UNAUTHORIZED)
                         .entity(Json.createObjectBuilder().add("response", "Fyll i båda fälten innan du klickar på 'Logga in'"))
                         .build();
         } else {
@@ -37,13 +37,13 @@ public class User_Controller {
                             response = Response.ok(getUser(email)).build();
                             break;
                         case 2:
-                            response = Response.status(Response.Status.BAD_REQUEST)
+                            response = Response.status(Response.Status.UNAUTHORIZED)
                                     .entity(Json.createObjectBuilder().add("response", "Emejlen finns inte med i databasen.").build())
                                     .build();
                             break;
 
                         case 3:
-                            response = Response.status(Response.Status.BAD_REQUEST)
+                            response = Response.status(Response.Status.UNAUTHORIZED)
                                     .entity(Json.createObjectBuilder().add("response", "Fel lösenord.").build())
                                     .build();
                             break;
