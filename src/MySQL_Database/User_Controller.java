@@ -12,40 +12,49 @@ public class User_Controller {
 
     public Response login_user(JsonObject credentials){
         Response response = Response.status(Response.Status.BAD_REQUEST).build();
+        String email = credentials.getString("email");
+        String password = credentials.getString("password");
 
-        try {
-            String SQL = "SELECT login(?,?)";
-            PreparedStatement stmt = MySQL_Connection.getInstance().getConnection().prepareStatement(SQL);
-            stmt.setString(1, credentials.getString("email"));
-            stmt.setString(2, credentials.getString("password"));
+        if (email.equals("") || password.equals("")) {
+            response = Response.status(Response.Status.BAD_REQUEST)
+                        .entity(Json.createObjectBuilder().add("response", "Fyll i båda fälten innan du klickar på 'Logga in'"))
+                        .build();
+        } else {
 
-            ResultSet rs = stmt.executeQuery();
+            try {
+                String SQL = "SELECT login(?,?) AS RESULT";
+                PreparedStatement stmt = MySQL_Connection.getInstance().getConnection().prepareStatement(SQL);
+                stmt.setString(1, email);
+                stmt.setString(2, password);
 
-            if (rs.next()) {
-                int response_value = rs.getInt("login('"+ credentials.getString("email") + "','"+ credentials.getString("password") +"')");
+                ResultSet rs = stmt.executeQuery();
 
-                switch (response_value) {
-                    case 1:
-                        response = Response.ok(getUser(credentials.getString("email"))).build();
-                        break;
-                    case 2:
-                        response = Response.status(Response.Status.BAD_REQUEST)
+                if (rs.next()) {
+                    int response_value = rs.getInt("RESULT");
+
+                    switch (response_value) {
+                        case 1:
+                            response = Response.ok(getUser(email)).build();
+                            break;
+                        case 2:
+                            response = Response.status(Response.Status.BAD_REQUEST)
                                     .entity(Json.createObjectBuilder().add("response", "Emejlen finns inte med i databasen.").build())
                                     .build();
-                        break;
+                            break;
 
-                    case 3:
-                        response = Response.status(Response.Status.BAD_REQUEST)
+                        case 3:
+                            response = Response.status(Response.Status.BAD_REQUEST)
                                     .entity(Json.createObjectBuilder().add("response", "Fel lösenord.").build())
                                     .build();
-                        break;
+                            break;
+                    }
                 }
-            }
 
-        } catch (Exception e) {
-            System.out.println("Error in User_Controller::login_user! \n");
-            System.out.println(e.getMessage());
-            e.printStackTrace();
+            } catch (Exception e) {
+                System.out.println("Error in User_Controller::login_user! \n");
+                System.out.println(e.getMessage());
+                e.printStackTrace();
+            }
         }
 
         return response;
