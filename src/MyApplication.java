@@ -11,6 +11,7 @@ public class MyApplication extends Application {
         HashSet h = new HashSet<Class<?>>();
         //h.add(HelloWorld.class);
         h.add(User_Service.class);
+        h.add(Activity_Service.class);
         h.add(CorsFilter.class);
         return h;
     }
