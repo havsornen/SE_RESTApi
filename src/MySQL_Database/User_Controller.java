@@ -1,7 +1,9 @@
 package MySQL_Database;
 
 import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.ws.rs.core.Response;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -120,5 +122,34 @@ public class User_Controller {
             e.printStackTrace();
         }
             return JO;
+    }
+
+    public Response getFriends(int user_ID) {
+        Response response = Response.status(Response.Status.NOT_FOUND).build();
+
+        try{
+            String SQL = "CALL view_friends(?);";
+            PreparedStatement stmt = MySQL_Connection.getInstance().getConnection().prepareStatement(SQL);
+            stmt.setInt(1, user_ID);
+
+            ResultSet rs = stmt.executeQuery();
+
+            JsonArrayBuilder friends_list = Json.createArrayBuilder();
+
+            while (rs.next()) {
+                JsonObjectBuilder friend = Json.createObjectBuilder()
+                        .add("name", rs.getString("Friends"));
+
+                friends_list.add(friend);
+            }
+
+            response = Response.ok(friends_list.build()).build();
+
+        } catch (Exception e) {
+            System.out.println("Error in User_Controller::getFriends" + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return response;
     }
 }

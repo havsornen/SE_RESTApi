@@ -38,4 +38,11 @@ public class User_Service {
 
         return UC.create_user(user_values);
     }
+
+    @GET
+    @Path("/friends/{User_ID}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response friends(@PathParam("User_ID") int user_ID) {
+        return UC.getFriends(user_ID);
+    }
 }
