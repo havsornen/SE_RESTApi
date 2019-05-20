@@ -1,11 +1,11 @@
 package MySQL_Database;
 
 
-import javax.json.Json;
-import javax.json.JsonObject;
+import javax.json.*;
 import javax.ws.rs.core.Response;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class Activity_Controller {
 
@@ -32,7 +32,7 @@ public class Activity_Controller {
 
                 switch (response_value) {
                     case 1:
-                        response = Response.ok().build();
+                        response = invite_invitees(activity_info);
                         break;
                     case 2:
                         response = Response.status(Response.Status.BAD_REQUEST)
@@ -50,6 +50,94 @@ public class Activity_Controller {
         } catch (Exception e) {
             System.out.println("Error in Activity_Controller::create_activity: " + e.getMessage());
             e.printStackTrace();
+        }
+
+        return response;
+    }
+
+    private Response invite_invitees(JsonObject activity_info) {
+        Response response = Response.status(Response.Status.BAD_REQUEST).build();
+
+        try {
+            String SQL = "SELECT * FROM activity WHERE activity_owner = ? AND activity_title = ?;";
+            PreparedStatement stmt = MySQL_Connection.getInstance().getConnection().prepareStatement(SQL);
+            stmt.setInt(1, activity_info.getInt("act_owner"));
+            stmt.setString(2, activity_info.getString("act_title"));
+
+            ResultSet full_activity = stmt.executeQuery();
+
+            if (full_activity.next()) {
+                String activity_title = full_activity.getString("activity_title");
+                int owner_ID = full_activity.getInt("activity_owner");
+
+                String SQL_friends = "SELECT usr_ID FROM users WHERE usr_ID IN (SELECT REPLACE(CONCAT(usr_1, usr_2), ?, '') AS Friends FROM usr_relations WHERE usr_1 = ? OR usr_2 = ?);";
+                PreparedStatement friend_stmt = MySQL_Connection.getInstance().getConnection().prepareStatement(SQL_friends);
+                friend_stmt.setInt(1, owner_ID);
+                friend_stmt.setInt(2, owner_ID);
+                friend_stmt.setInt(3, owner_ID);
+
+                ResultSet friends_rs = friend_stmt.executeQuery();
+
+                int invited_friends = 0;
+                while (friends_rs.next()) {
+                    String SQL_add = "SELECT add_invitee(?,?,?) AS 'RESULT';";
+                    PreparedStatement add_stmt = MySQL_Connection.getInstance().getConnection().prepareStatement(SQL_add);
+                    add_stmt.setInt(1, friends_rs.getInt("usr_ID"));
+                    add_stmt.setString(2, activity_title);
+                    add_stmt.setInt(3, owner_ID);
+
+                    ResultSet friend_return = add_stmt.executeQuery();
+
+                    if (friend_return.next()){
+                        invited_friends++;
+                    }
+                }
+
+                response = Response.ok(Json.createObjectBuilder().add("Friends_added", invited_friends).build()).build();
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error in Activity_Controller::invite_invitees: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return response;
+    }
+
+    public Response getActivites(int userID) {
+        Response response = Response.status(Response.Status.BAD_REQUEST).build();
+
+        try {
+            String SQL = "CALL get_activities(?);";
+            PreparedStatement stmt = MySQL_Connection.getInstance().getConnection().prepareStatement(SQL);
+            stmt.setInt(1, userID);
+            ResultSet rs = stmt.executeQuery();
+
+            JsonArrayBuilder activities = Json.createArrayBuilder();
+
+            while (rs.next()) {
+               JsonObject JO = Json.createObjectBuilder()
+                       .add("activity_ID", rs.getString("activity_ID"))
+                       .add("activity_owner", rs.getString("activity_owner"))
+                       .add("activity_desciption", rs.getString("activity_desciption"))
+                       .add("activity_title", rs.getString("activity_title"))
+                       .add("activity_start", rs.getString("activity_start"))
+                       .add("activity_end", rs.getString("activity_end"))
+                       .add("activity_created", rs.getString("activity_created"))
+                       .add("activity_type", rs.getString("activity_type"))
+                       .add("activity_permission", rs.getString("activity_permission"))
+                       .build();
+
+              activities.add(JO);
+            }
+
+            response = Response.ok(activities.build()).build();
+
+        } catch (Exception e) {
+            System.out.println("Error in getActivites: " + e.getMessage());
+            e.printStackTrace();
+
+            response = Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
         }
 
         return response;
