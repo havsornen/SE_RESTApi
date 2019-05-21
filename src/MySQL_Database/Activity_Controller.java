@@ -142,4 +142,34 @@ public class Activity_Controller {
 
         return response;
     }
+    /*
+    * Soo this is a weird function, we have to find a way to properly check
+    * if a procedure ended with a success. Casue it doenst do that now.
+    */
+
+    public Response respond_activity(JsonObject data_response) {
+        Response response = Response.status(Response.Status.BAD_REQUEST).build();
+        int userID = data_response.getInt("usr_ID");
+        int activityID = data_response.getInt("activity_ID");
+        int responseID = data_response.getInt("response");
+
+        try {
+            String SQL = "CALL activity_response(?, ?, ?);";
+            PreparedStatement stmt = MySQL_Connection.getInstance().getConnection().prepareStatement(SQL);
+            stmt.setInt(1, userID);
+            stmt.setInt(2, activityID);
+            stmt.setInt(3, responseID);
+
+            ResultSet rs = stmt.executeQuery();
+
+            response = Response.ok().build();
+
+        } catch (Exception e) {
+            System.out.println("Error in Activity_Controller::respond_activity: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return response;
+
+    }
 }

@@ -35,4 +35,14 @@ public class Activity_Service {
 
         return this.AC.getActivites(user_ID);
     }
+
+    @POST
+    @Path("/respond")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response respond_activity(String body) {
+        JsonReader JR = Json.createReader(new StringReader(body));
+        JsonObject response = JR.readObject();
+
+        return this.AC.respond_activity(response);
+    }
 }
