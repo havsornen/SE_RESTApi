@@ -172,4 +172,50 @@ public class Activity_Controller {
         return response;
 
     }
+
+    public Response getMembers(int activity_id, boolean invitees) {
+        Response response = Response.status(Response.Status.BAD_REQUEST).build();
+
+        try {
+            String SQL = "SELECT users.usr_ID, users.usr_firstname, users.usr_lastname, users.usr_email, users.usr_telnumber, AM.activity_member_type " +
+                        "FROM activity_members as AM " +
+                        "JOIN users " +
+                        "WHERE activity_ID = ? AND users.usr_ID = AM.usr_ID;";
+            if (invitees) {
+                SQL = "SELECT users.usr_ID, users.usr_firstname, users.usr_lastname, users.usr_email, users.usr_telnumber " +
+                        "FROM activity_invitees as AI " +
+                        "JOIN users " +
+                        "WHERE activity_ID = ? AND users.usr_ID = AI.usr_ID;";
+            }
+
+            PreparedStatement stmt = MySQL_Connection.getInstance().getConnection().prepareStatement(SQL);
+            stmt.setInt(1, activity_id);
+
+            ResultSet rs = stmt.executeQuery();
+            JsonArrayBuilder result_data = Json.createArrayBuilder();
+
+            while(rs.next()) {
+                JsonObjectBuilder user = Json.createObjectBuilder()
+                        .add("usr_ID", rs.getString("usr_ID"))
+                        .add("usr_firstname", rs.getString("usr_firstname"))
+                        .add("usr_lastname", rs.getString("usr_lastname"))
+                        .add("usr_email", rs.getString("usr_email"))
+                        .add("usr_telnumber", rs.getString("usr_telnumber"));
+
+                if (!invitees) {
+                    user.add("usr_member_type", rs.getString("activity_member_type"));
+                }
+
+                result_data.add(user);
+            }
+
+            response = Response.ok(result_data.build()).build();
+
+        } catch(Exception e) {
+            System.out.println("Error in Activity_Controller::getMembers: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return response;
+    }
 }

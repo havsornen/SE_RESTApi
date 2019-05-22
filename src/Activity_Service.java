@@ -45,4 +45,18 @@ public class Activity_Service {
 
         return this.AC.respond_activity(response);
     }
+
+    @GET
+    @Path("/members/{activity_ID}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response members(@PathParam("activity_ID") int activity_ID) {
+        return this.AC.getMembers(activity_ID, false);
+    }
+
+    @GET
+    @Path("/invitees/{activity_ID}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response invitees(@PathParam("activity_ID") int activity_ID) {
+        return this.AC.getMembers(activity_ID, true);
+    }
 }
