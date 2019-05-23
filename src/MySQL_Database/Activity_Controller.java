@@ -5,7 +5,6 @@ import javax.json.*;
 import javax.ws.rs.core.Response;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class Activity_Controller {
 
